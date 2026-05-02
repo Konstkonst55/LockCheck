@@ -8,6 +8,8 @@ on:
 jobs:
   build-and-release:
     runs-on: windows-latest
+    permissions:
+      contents: write
     
     steps:
     - name: Checkout
@@ -33,13 +35,13 @@ jobs:
       shell: cmd
       
     - name: Create ZIP archive
-      run: Compress-Archive -Path "publish\*" -DestinationPath "LockCheck_${{ github.ref_name }}.zip"
+      run: Compress-Archive -Path "publish\*" -DestinationPath "LockCheck.zip"
       
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
-        files: ./LockCheck_v${{ github.ref_name }}.zip
-        name: "LockCheck ${{ github.ref_name }}"
+        files: LockCheck.zip
+        name: "LockCheck v${{ github.ref_name }}"
         body: |
           ## LockCheck v${{ github.ref_name }}
           
