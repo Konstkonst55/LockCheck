@@ -41,9 +41,9 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         files: LockCheck.zip
-        name: "LockCheck v${{ github.ref_name }}"
+        name: "LockCheck ${{ github.ref_name }}"
         body: |
-          ## LockCheck v${{ github.ref_name }}
+          ## LockCheck ${{ github.ref_name }}
           
           Десктопное приложение для отображения состояния клавиш CapsLock и NumLock.
           
