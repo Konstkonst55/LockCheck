@@ -43,8 +43,6 @@ jobs:
         files: LockCheck.zip
         name: "LockCheck ${{ github.ref_name }}"
         body: |
-          ## LockCheck ${{ github.ref_name }}
-          
           Десктопное приложение для отображения состояния клавиш CapsLock и NumLock.
           
           ### Требования
