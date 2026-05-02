@@ -2,11 +2,13 @@
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using Microsoft.Win32;
 
 namespace LockCheck
 {
     public partial class FormLockCheck : Form
-    {   /// <summary>
+    {
+        /// <summary>
         /// Идентификатор хука клавиатуры
         /// </summary>
         private IntPtr _hookID = IntPtr.Zero;
@@ -48,7 +50,8 @@ namespace LockCheck
             InitializeComponent();
             _keyboardProc = HookCallback;
             _hookID = SetHook(_keyboardProc);
-            UpdateIcons(); 
+            UpdateIcons();
+            AddToStartup();
         }
 
         [DllImport("user32.dll")]
@@ -67,12 +70,42 @@ namespace LockCheck
         private static extern short GetKeyState(int nVirtKey);
 
         /// <summary>
+        /// Добавляет приложение в автозагрузку Windows
+        /// </summary>
+        private void AddToStartup()
+        {
+            try
+            {
+                string appName = "LockCheck";
+                string appPath = Application.ExecutablePath;
+
+                using (RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true))
+                {
+                    if (key != null)
+                    {
+                        object existingValue = key.GetValue(appName);
+
+                        if (existingValue == null || existingValue.ToString() != appPath)
+                        {
+                            key.SetValue(appName, appPath);
+                            notifyIconCapsLock.ShowBalloonTip(3000, "LockCheck", "Приложение добавлено в автозагрузку", ToolTipIcon.Info);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка добавления в автозагрузку: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// Устанавливает хук для перехвата нажатий клавиш
         /// </summary>
         private IntPtr SetHook(LowLevelKeyboardProc proc)
         {
             using (Process curProcess = Process.GetCurrentProcess())
-
+            
             using (ProcessModule curModule = curProcess.MainModule)
             {
                 return SetWindowsHookEx(WhKeyboard, proc, GetModuleHandle(curModule.ModuleName), 0);
@@ -163,7 +196,7 @@ namespace LockCheck
             {
                 ShowInTaskbar = false;
                 notifyIconCapsLock.Visible = true;
-                notifyIconNumLock.Visible = true; 
+                notifyIconNumLock.Visible = true;
             }
         }
 
@@ -207,7 +240,7 @@ namespace LockCheck
         {
             Capture = false;
             Message m = Message.Create(Handle, 0xa1, new IntPtr(2), IntPtr.Zero);
-            WndProc(ref m); 
+            WndProc(ref m);
         }
     }
 }
