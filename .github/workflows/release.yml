@@ -20,10 +20,20 @@ jobs:
       run: nuget restore LockCheck.sln
       
     - name: Build Release
-      run: msbuild LockCheck.sln /p:Configuration=Release /p:Platform="Any CPU" /p:OutputPath=./publish
+      run: msbuild LockCheck.sln /p:Configuration=Release /p:Platform="Any CPU"
+      
+    - name: Create publish folder
+      run: |
+        mkdir publish
+        xcopy /E /I /Y "LockCheck\bin\Release\*" "publish\"
+      shell: cmd
+      
+    - name: List files for debugging
+      run: dir publish
+      shell: cmd
       
     - name: Create ZIP archive
-      run: Compress-Archive -Path ./publish/* -DestinationPath ./LockCheck_v${{ github.ref_name }}.zip
+      run: Compress-Archive -Path "publish\*" -DestinationPath "LockCheck_${{ github.ref_name }}.zip"
       
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
