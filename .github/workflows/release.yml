@@ -1,0 +1,50 @@
+name: Release LockCheck
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
+      
+    - name: Restore NuGet packages
+      run: nuget restore LockCheck.sln
+      
+    - name: Build Release
+      run: msbuild LockCheck.sln /p:Configuration=Release /p:Platform="Any CPU" /p:OutputPath=./publish
+      
+    - name: Create ZIP archive
+      run: Compress-Archive -Path ./publish/* -DestinationPath ./LockCheck_v${{ github.ref_name }}.zip
+      
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: ./LockCheck_v${{ github.ref_name }}.zip
+        name: "LockCheck ${{ github.ref_name }}"
+        body: |
+          ## LockCheck v${{ github.ref_name }}
+          
+          Десктопное приложение для отображения состояния клавиш CapsLock и NumLock.
+          
+          ### Требования
+          - Windows 7/8/10/11
+          - .NET Framework 4.7.2
+          
+          ### Установка
+          Распакуйте архив и запустите **LockCheck.exe**
+          
+          ### Особенности
+          - Иконки в трее панели задач
+          - Отображение CapsLock, NumLock, ScrollLock
+          - Сворачивание в трей
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
